@@ -1,0 +1,129 @@
+<head>
+    <script type="text/javascript" src="Dataset/Cleaned_Cyclist_Volume_2.json"></script>
+    <script type="text/javascript" src="Dataset/Cleaned_Intersection_2.json"></script>
+    <script>
+        function go(){
+            let result = [];
+            let majorSingleLevel = [], majorMultiLevel = [], minorSingleLevel = [], minorMultiLevel = [];
+            let minorSingleIndex, majorSingleIndex, minorMultiIndex, majorMultiIndex;
+            let mnSingleLevel, mjSingleLevel, mnMultiLevel, mjMultiLevel;
+
+            intersection.forEach(intersection => {
+                switch (intersection.CLASSIFICATION) {
+                    case "MNRSL":
+                        minorSingleLevel.push(intersection);
+                        break;
+                    case "MJRSL":
+                        majorSingleLevel.push(intersection);
+                        break;
+                    case "MNRML":
+                        minorMultiLevel.push(intersection);
+                        break;
+                    case "MJRML":
+                        majorMultiLevel.push(intersection);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            volumes.forEach(volume => {
+                let street1 = volume.STREET1;
+                let street2 = volume.STREET2;
+
+                minorSingleIndex = minorSingleLevel.findIndex(level => level.INTERSECTIONDESC.includes(street1) && level.INTERSECTIONDESC.includes(street2));
+                if (minorSingleIndex !== -1) {
+                    mnSingleLevel = minorSingleLevel[minorSingleIndex];
+                    push(result, volume, mnSingleLevel);
+                }
+
+                majorSingleIndex = majorSingleLevel.findIndex(level => level.INTERSECTIONDESC.includes(street1) && level.INTERSECTIONDESC.includes(street2));
+                if (majorSingleIndex !== -1) {
+                    mjSingleLevel = majorSingleLevel[majorSingleIndex];
+                    push(result, volume, mjSingleLevel);
+                }
+
+                // if (minorSingleIndex === -1 && majorSingleIndex === -1) {
+                minorMultiIndex = minorMultiLevel.findIndex(level => level.INTERSECTIONDESC.includes(street1) && level.INTERSECTIONDESC.includes(street2));
+                if (minorMultiIndex !== -1) {
+                    mnMultiLevel = minorMultiLevel[minorMultiIndex];
+                    push(result, volume, mnMultiLevel);
+                }
+
+                majorMultiIndex = majorMultiLevel.findIndex(level => level.INTERSECTIONDESC.includes(street1) && level.INTERSECTIONDESC.includes(street2));
+                if (majorMultiIndex !== -1) {
+                    mjMultiLevel = majorMultiLevel[majorMultiIndex];
+                    push(result, volume, mjMultiLevel);
+                }
+                // }
+                minorSingleIndex = -1;
+                majorSingleIndex = -1;
+                minorMultiIndex = -1;
+                majorMultiIndex = -1;
+            });
+            // for (let x = 0; x < intersection.length; x++){
+            //     let inter = intersection[x];
+            //     for (let i = 0; i < volumes.length; i++){
+            //         // let test1 = volumes[i].STREET1 + (volumes[i].STREET2 !== "" ? ` / ${volumes[i].STREET2}` : "");
+            //         // let test2 = volumes[i].STREET2 + (volumes[i].STREET1 !== "" ? ` / ${volumes[i].STREET1}` : "");
+            //         let street1 = volumes[i].STREET1;
+            //         let street2 = volumes[i].STREET2;
+            //         if (
+            //             // inter.INTERSECTIONDESC.includes(test1) || inter.INTERSECTIONDESC.includes(test2)
+            //             inter.INTERSECTIONDESC.includes(street1) && inter.INTERSECTIONDESC.includes(street2)
+            //         ){
+            //             result.push(JSON.stringify({
+            //                 "STREET1": volumes[i].STREET1,
+            //                 "STREET2": volumes[i].STREET2,
+            //                 "DIRECTION": volumes[i].DIRECTION,
+            //                 "LOCATION": volumes[i].LOCATION,
+            //                 "TEMPERATURE": volumes[i].daily_temperature,
+            //                 "PRECIPITATION": volumes[i].daily_precipitation,
+            //                 "OBV_START": volumes[i].datetime_bin_start,
+            //                 "OBV_END": volumes[i].datetime_bin_end,
+            //                 "VOLUME": volumes[i].volume,
+            //                 "INTERSECTIONDESC": inter.INTERSECTIONDESC,
+            //                 "CLASSIFICATION": inter.CLASSIFICATION,
+            //                 "CLASSIFICATIONDESC": inter.CLASSIFICATIONDESC,
+            //                 "GEOMETRY": inter.geometry,
+            //                 "MODGEOMETRY": `[${inter.MODGEOMETRY.split(",")[1].trim().replace("\)", "")}, ${inter.MODGEOMETRY.split(",")[0].trim().replace("\(", "")}]`
+            //             }));
+            //         }
+            //     }
+            // }
+            console.log(result);
+            saveText(result, "test1.json");
+        }
+
+        function push(result, volume, level) {
+            result.push(JSON.stringify({
+                "STREET1": volume.STREET1,
+                "STREET2": volume.STREET2,
+                "DIRECTION": volume.DIRECTION,
+                "LOCATION": volume.LOCATION,
+                "TEMPERATURE": volume.daily_temperature,
+                "PRECIPITATION": volume.daily_precipitation,
+                "OBV_START": volume.datetime_bin_start,
+                "OBV_END": volume.datetime_bin_end,
+                "VOLUME": volume.volume,
+                "INTERSECTIONDESC": level.INTERSECTIONDESC,
+                "CLASSIFICATION": level.CLASSIFICATION,
+                "CLASSIFICATIONDESC": level.CLASSIFICATIONDESC,
+                "GEOMETRY": level.geometry,
+                "MODGEOMETRY": `[${level.MODGEOMETRY.split(",")[1].trim().replace("\)", "")}, ${level.MODGEOMETRY.split(",")[0].trim().replace("\(", "")}]`
+            }));
+        }
+
+        function saveText(text, filename){
+            var a = document.createElement('a');
+            a.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(text));
+            a.setAttribute('download', filename);
+            a.click()
+        }
+    </script>
+</head>
+<body>
+    <button onclick="go()">
+        click
+    </button>
+</body>
