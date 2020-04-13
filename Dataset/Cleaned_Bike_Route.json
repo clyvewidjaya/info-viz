@@ -1,4 +1,4 @@
-[
+var bikeRoute = [
  {
    "INSTALLED": 2001,
    "UPGRADED": 2007,
