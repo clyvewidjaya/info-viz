@@ -3,11 +3,24 @@
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
 <style>
 
-html, body, #map {
+html, body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
+}
+
+#map{
+  width: 100%;
+  height: 60%;
+}
+h1{
+  width: 100%;
+  height: 10%;
+}
+#sliders{
+  width: 100%;
+  height: 30%;
 }
 
 .junctions, .junctions svg {
@@ -26,7 +39,9 @@ html, body, #map {
 }
 
 </style>
+<h1>map</h1>
 <div id="map"></div>
+<div id="sliders"></div>
 <!--script src="//maps.google.com/maps/api/js?sensor=true"></script-->
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="Dataset/Cleaned_Intersection_2.json"></script>
