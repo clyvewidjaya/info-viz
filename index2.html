@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+        <!--    access with 'volume'-->
+        <script type="text/javascript" src="Dataset/Cleaned_Cyclist_Volume_2.json"></script>
+
+        <!--    access with 'intersection'-->
+        <script type="text/javascript" src="Dataset/Cleaned_Intersection_2.json"></script>
+
+        <!--    access with 'ksi'-->
+        <script type="text/javascript" src="Dataset/Cleaned_KSI.json"></script>
+
+        <!--    access with 'bikeRoute'-->
+        <script type="text/javascript" src="Dataset/Cleaned_Bike_Route_2.json"></script>
+
+        <!--    access with 'cvi'-->
+        <script type="text/javascript" src="Dataset/Combined_Cyclist_Volume_Intersection_3.json"></script>
+
+        <!--    d3-->
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQgXyLaG_zCa9cOn8L12O6SDVZMLsVD5U" type="text/javascript"></script>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+                crossorigin="anonymous">
+        </script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+
+<!--        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>-->
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/round-slider@1.4.1/dist/roundslider.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/round-slider@1.4.1/dist/roundslider.min.css">
+
+<!--        <link rel="stylesheet" type="text/css" href="https://github.com/MougLee/circular-slider/blob/master/lib/circular-slider.css"/>-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+        <!--    Code goes here -->
+
+        <script>
+            var map;
+            var overlay;
+
+            var currentSelectedIntersection;
+            var currentLowYear;
+            var currentHighYear;
+            var currentLowSeverity;
+            var currentHighSeverity;
+            var currentSelectedMonths;
+
+            function init(){
+                mapInit();
+                filterInit();
+            }
+
+            function mapInit(){
+                map = new google.maps.Map(d3.select("#vis").node(), {
+                    zoom: 9,
+                    center:new google.maps.LatLng(43.7532,-79.3832),
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    // disableDefaultUI: true
+                });
+
+
+                // intersection = intersection.slice(0,500);
+                let data = intersection.slice(0,500);
+                overlay = new google.maps.OverlayView();
+                console.log(data);
+
+
+                overlay.onAdd = function() {
+                    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+                        .attr("class", "junctions");
+
+                    // Draw each marker as a separate SVG element.
+                    // We could use a single SVG, but what size would it have?
+                    overlay.draw = function() {
+                        var projection = this.getProjection(),
+                            padding = 10;
+
+                        var marker = layer.selectAll("svg")
+                            .data(d3.entries(data))
+                            .each(transform) // update existing markers
+                            .enter().append("svg")
+                            .each(transform)
+                            .attr("class", "marker");
+
+                        // Add a circle.
+                        marker.append("circle")
+                            .attr("r", 8)
+                            .attr("cx", padding)
+                            .attr("cy", padding);
+
+                        /*    // Add a label.
+                            marker.append("text")
+                                .attr("x", padding + 7)
+                                .attr("y", padding)
+                                .attr("dy", ".31em")
+                                .text(function(d) { return d.key; });
+                      */
+                        function transform(d) {
+                            var pos = d.value.MODGEOMETRY.slice(2, d.value.MODGEOMETRY.length - 1).split(', ').map(parseFloat);
+                            d = new google.maps.LatLng(pos[1], pos[0]);
+                            d = projection.fromLatLngToDivPixel(d);
+                            return d3.select(this)
+                                .style("left", (d.x - padding) + "px")
+                                .style("top", (d.y - padding) + "px");
+                        }
+                    };
+
+                };
+                overlay.setMap(map);
+
+
+
+            }
+
+            function filterInit(){
+                //all selected intersection for init
+                currentSelectedIntersection = ["MJRSL", "MNRSL", "MJRML", "MNRML"];
+
+                $("#rate-slider-range").slider({
+                    range: true,
+                    min: 0,
+                    max: 100,
+                    values: [0, 100],
+                    slide: function(event, ui) {
+                        $("#rate-slider").val(ui.values[ 0 ] + "% - " + ui.values[ 1 ] + "%");
+                        currentLowSeverity = Number | ui.values[0];
+                        currentHighSeverity = Number | ui.values[1];
+                        updateData();
+                    }
+                });
+                //showing all points with 0-100 severity rating
+                $("#rate-slider").val(`${0}% - ${100}%`);
+
+                let ksiYears = [];
+                ksi.forEach(accident => {
+                    ksiYears.push(accident.YEAR);
+                });
+
+                let minMaxKSIYears = d3.extent([...new Set(ksiYears)]);
+
+                $("#year-slider-range").slider({
+                    range: true,
+                    min: minMaxKSIYears[0],
+                    max: minMaxKSIYears[1],
+                    values: [minMaxKSIYears[0], minMaxKSIYears[1]],
+                    slide: function(event, ui) {
+                        $("#year-slider").val(ui.values[ 0 ] + " - " + ui.values[ 1 ]);
+                        currentLowYear = Number | ui.values[0];
+                        currentHighYear = Number | ui.values[1];
+                        updateData();
+                    }
+                });
+
+                //showing all points with 0-100 severity rating
+                $("#year-slider").val(`${minMaxKSIYears[0]} - ${minMaxKSIYears[1]}`);
+
+                $.fn.roundSlider.prototype._invertRange = true;
+                $("#month").roundSlider({
+                    sliderType: "range",
+                    min: 1,
+                    max: 12,
+                    editableTooltip: false,
+                    value: "1,12",
+                    animation: false,
+                    change: function(args){
+                        console.log(args.value);
+                        let lowMonth = Number | args.value.split(",")[0];
+                        let highMonth = Number | args.value.split(",")[1];
+                        if (lowMonth === highMonth){
+                            currentSelectedMonths = [lowMonth];
+                        } else if (lowMonth < highMonth){
+                            currentSelectedMonths = [];
+                            for (let i = 0; i <= highMonth - lowMonth; i++){
+                                currentSelectedMonths.push(lowMonth + i);
+                            }
+                        } else {
+                            currentSelectedMonths = [];
+                            for (let i = lowMonth; i <= 12; i++) {
+                                currentSelectedMonths.push(i);
+                            }
+
+                            for (let i = 1; i <= highMonth; i++) {
+                                currentSelectedMonths.push(i);
+                            }
+                        }
+                        updateData();
+                    },
+                    tooltipFormat: function(args) {
+                        var months = ["", "Jan", "Feb", "Mar",
+                            "Apr", "May", "Jun", "Jul",
+                            "Aug", "Sep", "Oct",
+                            "Nov", "Dec"
+                        ];
+                        return months[args.value];
+                    },
+                });
+
+                currentSelectedMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            }
+
+            function checkboxChange(){
+                currentSelectedIntersection = [];
+                $('#intersection-type-filter :input:checkbox:checked').each(function(){
+                    currentSelectedIntersection.push(this.value);
+                });
+                updateData();
+            }
+
+            function updateData(){
+                console.log("update data here");
+
+                //all the needed filter variables will have the prefix of
+                //current..... (see top)
+            }
+
+        </script>
+
+        <style>
+            .junctions, .junctions svg {
+                position: absolute;
+            }
+
+            .junctions svg {
+                width: 60px;
+                height: 20px;
+                padding-right: 100px;
+                font: 10px sans-serif;
+            }
+
+            .junctions circle {
+                fill: red;
+                opacity:0.8;
+                stroke:white;
+                stroke-width:1;
+            }
+        </style>
+    </head>
+    <body onload="init()">
+        <div class="container-fluid" style="height: 700px; width: 1300px">
+            <div class="row">
+                <div class="col-9" id="vis" style="height: 700px">
+
+                </div>
+                <div class="col-3" style="height: 700px">
+                    <div id="intersection-type-filter" style="margin-top: 20px;">
+                        <h5 class="text-center">Intersection</h5>
+                        <div class="row" style="height: 50px">
+                            <div class="col" style="height: 50px">
+                                <div class="row justify-content-around" style="margin: 0">
+                                    <input type="checkbox" id="major-single" value="MJRSL" style="margin-top: 5px;" onchange=checkboxChange()>
+                                    <label for="major-single">Major Single</label>
+                                </div>
+                                <div class="row justify-content-around" style="margin: 0">
+                                    <input type="checkbox" id="minor-single" value="MNRSL" style="margin-top: 5px;" onchange=checkboxChange()>
+                                    <label for="minor-single">Minor Single</label>
+                                </div>
+                            </div>
+                            <div class="col" style="height: 50px">
+                                <div class="row justify-content-around" style="margin: 0">
+                                    <input type="checkbox" id="major-multi" value="MJRML" style="margin-top: 5px;" onchange=checkboxChange() >
+                                    <label for="major-multi">Major Multi</label>
+                                </div>
+
+                                <div class="row justify-content-around" style="margin: 0">
+                                    <input type="checkbox" id="minor-multi" value="MNRML" style="margin-top: 5px;" onchange=checkboxChange() >
+                                    <label for="minor-multi">Minor Multi</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div id="severity-rating-filter" style="margin-top: 10px">
+                        <label for="rate-slider">Severity Rate:</label>
+                        <input type="text" id="rate-slider" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                        <div id="rate-slider-range" style="height: 10px"></div>
+                    </div>
+                    <hr>
+                    <div id="year-filter" style="margin-top: 10px;">
+                        <label for="year-slider">Year:</label>
+                        <input type="text" id="year-slider" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                        <div id="year-slider-range" style="height: 10px"></div>
+                    </div>
+                    <hr>
+                    <div id="month-filter" style="margin-top: 15px">
+                        <h5 class="text-center">Month</h5>
+                        <div class="d-flex justify-content-center">
+                            <div id="month" class="rslider"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </body>
+
+</html>
