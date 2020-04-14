@@ -23,11 +23,11 @@ h1{
   height: 30%;
 }
 
-.junctions, .junctions svg , .accident, .accident svg{
+.junctions, .junctions svg , .accident, .accident svg, .severityMark, .severityMark svg{
   position: absolute;
 }
 
-.junctions svg, .accident svg {
+.junctions svg, .accident svg, .severityMark svg{
   width: 60px;
   height: 20px;
   padding-right: 100px;
@@ -39,16 +39,18 @@ h1{
 }
 .accident circle {
   fill: red;
-  border-style: solid;
-  border-color: BLACK;
   opacity: 0.1;
+}
+.severityMark circle {
+  opacity: 0.75;
 }
 
 </style>
 <h1>map</h1>
 <div id="map"></div>
 <div id="sliders"></div>
-<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<!--script src="//d3js.org/d3.v3.min.js"></script-->
 
 <script type="text/javascript" src="plotFunctions.js"></script>
 
@@ -66,7 +68,6 @@ var map = new google.maps.Map(d3.select("#map").node(), {
   //center: new google.maps.LatLng(37.76487, -122.41948),
   mapTypeId: google.maps.MapTypeId.ROADMAP
 });
-
-plotAccidents();
+plotSeverity();
 
 </script>
