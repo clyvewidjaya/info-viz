@@ -23,11 +23,11 @@ h1{
   height: 30%;
 }
 
-.junctions, .junctions svg {
+.junctions, .junctions svg , .accident, .accident svg{
   position: absolute;
 }
 
-.junctions svg {
+.junctions svg, .accident svg {
   width: 60px;
   height: 20px;
   padding-right: 100px;
@@ -37,82 +37,36 @@ h1{
 .junctions circle {
   fill: red;
 }
+.accident circle {
+  fill: red;
+  border-style: solid;
+  border-color: BLACK;
+  opacity: 0.1;
+}
 
 </style>
 <h1>map</h1>
 <div id="map"></div>
 <div id="sliders"></div>
-<!--script src="//maps.google.com/maps/api/js?sensor=true"></script-->
 <script src="//d3js.org/d3.v3.min.js"></script>
+
+<script type="text/javascript" src="plotFunctions.js"></script>
+
+<script type="text/javascript" src="Dataset/Cleaned_KSI.json"></script>
 <script type="text/javascript" src="Dataset/Cleaned_Intersection_2.json"></script>
+
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQgXyLaG_zCa9cOn8L12O6SDVZMLsVD5U"></script>
+
 <script>
 
 // Create the Google Map…
 var map = new google.maps.Map(d3.select("#map").node(), {
-  zoom: 9,
-  center:new google.maps.LatLng(43.7532,-79.3832),
+  zoom: 11,
+  center:new google.maps.LatLng(43.68,-79.3832),
   //center: new google.maps.LatLng(37.76487, -122.41948),
   mapTypeId: google.maps.MapTypeId.ROADMAP
 });
-intersection=intersection.slice(0,500);
-//console.log(data)
-console.log(intersection)
-data=intersection
-//intersection.forEach((data, i) => {
-  //console.log(data)
-  //console.log(intersection[i])
-  //if (error) throw error;
 
-  var overlay = new google.maps.OverlayView();
-
-  // Add the container when the overlay is added to the map.
-  overlay.onAdd = function() {
-    var layer = d3.select(this.getPanes().overlayLayer).append("div")
-        .attr("class", "junctions");
-
-    // Draw each marker as a separate SVG element.
-    // We could use a single SVG, but what size would it have?
-    overlay.draw = function() {
-      var projection = this.getProjection(),
-          padding = 1;
-
-      var marker = layer.selectAll("svg")
-          .data(d3.entries(data))
-          .each(transform) // update existing markers
-        .enter().append("svg")
-          .each(transform)
-          .attr("class", "marker");
-
-      // Add a circle.
-      marker.append("circle")
-          .attr("r", padding/2.0)
-          .attr("cx", padding)
-          .attr("cy", padding);
-
-  /*    // Add a label.
-      marker.append("text")
-          .attr("x", padding + 7)
-          .attr("y", padding)
-          .attr("dy", ".31em")
-          .text(function(d) { return d.key; });
-*/
-      function transform(d) {
-        //console.log(d);
-        //console.log(d.value.MODGEOMETRY.slice(2,d.value.MODGEOMETRY.length-1).split(', ').map(parseFloat));
-        var pos = d.value.MODGEOMETRY.slice(2,d.value.MODGEOMETRY.length-1).split(', ').map(parseFloat);
-        d = new google.maps.LatLng(pos[1], pos[0]);
-        d = projection.fromLatLngToDivPixel(d);
-        return d3.select(this)
-            .style("left", (d.x - padding) + "px")
-            .style("top", (d.y - padding) + "px");
-        //return null;
-      }
-    };
-  };
-
-  // Bind our overlay to the map…
-  overlay.setMap(map);
-//});
+plotAccidents();
 
 </script>
