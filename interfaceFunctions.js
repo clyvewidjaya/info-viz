@@ -4,11 +4,13 @@ var currentHighYear;
 var currentLowSeverity;
 var currentHighSeverity;
 var currentSelectedMonths;
+var currentSelectedType;
 var view;
 var noOverLap;
 
 function filterInit(){
     //all selected intersection for init
+    currentSelectedType=["FATAL","NON-FATAL INJURY"];
     currentSelectedIntersection = ["MJRSL", "MNRSL", "MJRML", "MNRML"];
     currentLowYear=2008;
     currentHighYear=2018;
@@ -104,6 +106,15 @@ function checkboxChange(){
     currentSelectedIntersection = [];
     $('#intersection-type-filter :input:checkbox:checked').each(function(){
         currentSelectedIntersection.push(this.value);
+    });
+    //console.log(currentSelectedIntersection)
+    updateData();
+}
+function checkboxChange2(){
+    currentSelectedType = [];
+    $('#iType-type-filter :input:checkbox:checked').each(function(){
+      //console.log(this)
+        currentSelectedType.push(this.value);
     });
     updateData();
 }

@@ -25,11 +25,13 @@ function clearOverview(){
 }
 function createSeverity(data){
   //intersection=intersection.slice(0,500);
-  var counts={}, traffic={}
-  var positions_2=intersection.map((s)=>{return s.MODGEOMETRY.slice(2,s.MODGEOMETRY.length-1).split(', ').map(parseFloat);});
-  var positions=[]
-  positions_2.forEach((item, i) => {
+  var counts={}
+  var positions2=intersection.map((s)=>{return s.MODGEOMETRY.slice(2,s.MODGEOMETRY.length-1).split(', ').map(parseFloat);});
+  positions=[];
+  positions2.forEach((item, i) => {
+
     if(currentSelectedIntersection.indexOf(intersection[i].CLASSIFICATION)!=-1){
+      //console.log(currentSelectedIntersection,intersection[i].CLASSIFICATION,currentSelectedIntersection.indexOf(intersection[i].CLASSIFICATION))
       positions.push(item)
     }
     //console.log(intersection[i],item)
@@ -38,19 +40,20 @@ function createSeverity(data){
   var quadtree = d3.quadtree().addAll(positions);
   positions.forEach((pos, i) => {
     counts[pos[0]+','+pos[1]]=0;
-    traffic[pos[0]+','+pos[1]]=0;
   });
   data.forEach((item, i) => {
     var year=parseInt(item.DATE.split('-')[1])
     //console.log(item.YEAR>=currentLowYear, item.YEAR<=currentHighYear)
     //console.log(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear)
-    if(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear && currentSelectedMonths.indexOf(year)!=-1){
+    if(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear && currentSelectedMonths.indexOf(year)!=-1 && currentSelectedType.indexOf(item.ACCLASS)!=-1){
       var found=quadtree.find(item.LONGITUDE,item.LATITUDE);
+      //console.log(found)
       counts[found[0]+','+found[1]]=counts[found[0]+','+found[1]]+1;
     }
   });
   for (const [ key, value ] of Object.entries(counts)) {
     if(value==0){
+      //console.log(counts[key])
       delete counts[key];
     }
   }
@@ -59,11 +62,12 @@ function createSeverity(data){
 }
 
 function plotSeverity(){
+
   var severity=createSeverity(ksi);
   console.log("severity");
   //console.log(d3.max(Object.values(severity)));
   //console.log(d3.min(Object.values(severity)));
-  var myColor = d3.scaleSequential().domain([d3.min(Object.values(severity)),d3.max(Object.values(severity))])
+  var myColor = d3.scaleSequential().domain([1,d3.max(Object.values(severity))])
     .interpolator(d3.interpolatePuRd);
   //console.log(typeof(severity))
   var keysSorted = Object.keys(severity).sort(function(a,b){return severity[a]-severity[b]})
@@ -87,6 +91,7 @@ function plotSeverity(){
       function transformA(d) {
         if(view==="Severity summary"){
           //console.log("A")
+          //console.log(d.value);
           var pos = d.value.split(',').map(parseFloat);
           d = new google.maps.LatLng(pos[1], pos[0]);
           d = projection.fromLatLngToDivPixel(d);
@@ -113,7 +118,7 @@ function plotSeverity(){
 }
 function plotIntersections(){
   console.log("intersection")
-  data=intersection.slice(0,500);
+  data=intersection//.slice(0,500);
   overlay = new google.maps.OverlayView();
   overlay.onRemove = function(){
       d3.selectAll("junctions").remove();
@@ -154,7 +159,16 @@ function plotIntersections(){
 function plotAccidents(){
   var quadtree = d3.quadtree();
   console.log("ksi")
-  data=ksi
+
+  data=[]//ksi
+
+  ksi.forEach((item, i) => {
+    var month=parseInt(item.DATE.split('-')[1])
+    if(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear && currentSelectedType.indexOf(item.ACCLASS)!=-1 && currentSelectedMonths.indexOf(month)!=-1){
+      data.push(item)
+    }
+  });
+
   overlay = new google.maps.OverlayView();
   overlay.onRemove= function(){
     d3.selectAll("accident").remove();
