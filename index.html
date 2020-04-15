@@ -11,8 +11,9 @@ html, body {
 }
 
 #map{
-  width: 100%;
-  height: 60%;
+  width: 75%;
+  height: 80%;
+  float:left;
 }
 h1{
   width: 100%;
@@ -46,13 +47,76 @@ h1{
 }
 
 </style>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous">
+</script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/round-slider@1.4.1/dist/roundslider.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/round-slider@1.4.1/dist/roundslider.min.css">
+
+
+
+
 <h1>map</h1>
 <div id="map"></div>
-<div id="sliders"></div>
+
+<div style="height: 700px; width: 20%; float:right; margin-left: 10px; border-left: 1px solid lightgray; padding: 10px">
+  <div id="intersection-type-filter" >
+    <h3 style="margin: 0; text-align: center; vertical-align: middle" >INTERSECTION</h3>
+    <div style="height: 50px; margin-top: 10px">
+      <div style="width: 50%; float:left; text-align: center">
+        <div style="margin: 0">
+          <input type="checkbox" id="major-single" value="MJRSL" style="margin-top: 5px;" onchange=checkboxChange()>
+          <label for="major-single">Major Single</label>
+        </div>
+        <div style="margin: 0">
+          <input type="checkbox" id="minor-single" value="MNRSL" style="margin-top: 5px;" onchange=checkboxChange()>
+          <label for="minor-single">Minor Single</label>
+        </div>
+      </div>
+      <div style="width: 50%; float:left; text-align: center">
+        <div style="margin: 0">
+          <input type="checkbox" id="major-multi" value="MJRML" style="margin-top: 5px;" onchange=checkboxChange() >
+          <label for="major-multi">Major Multi</label>
+        </div>
+
+        <div style="margin: 0">
+          <input type="checkbox" id="minor-multi" value="MNRML" style="margin-top: 5px;" onchange=checkboxChange() >
+          <label for="minor-multi">Minor Multi</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <div id="severity-rating-filter" style="margin: 10px 0; text-align: center; padding: 10px 0">
+    <h4 id="rate-slider-text" style="margin: 0"></h4>
+    <input type="text" id="rate-slider" readonly style="border:0; color:#f6931f; font-weight:bold;">
+    <div id="rate-slider-range" style="height: 10px"></div>
+  </div>
+  <hr>
+  <div id="year-filter" style="margin: 10px 0; text-align: center; padding: 10px 0">
+    <h4 id="year-slider-text" style="margin: 0"></h4>
+    <input type="text" id="year-slider" readonly style="border:0; color:#f6931f; font-weight:bold;">
+    <div id="year-slider-range" style="height: 10px"></div>
+  </div>
+  <hr>
+  <div id="month-filter" style="margin-top: 15px; text-align: center">
+    <h3>MONTH</h3>
+    <div style="display: flex; align-items: center; justify-content: center">
+      <div id="month" class="rslider"></div>
+    </div>
+  </div>
+</div>
+
+
+
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <!--script src="//d3js.org/d3.v3.min.js"></script-->
 
 <script type="text/javascript" src="plotFunctions.js"></script>
+<script type="text/javascript" src="interfaceFunctions.js"></script>
 
 <script type="text/javascript" src="Dataset/Cleaned_KSI.json"></script>
 <script type="text/javascript" src="Dataset/Cleaned_Intersection_2.json"></script>
@@ -68,6 +132,7 @@ var map = new google.maps.Map(d3.select("#map").node(), {
   //center: new google.maps.LatLng(37.76487, -122.41948),
   mapTypeId: google.maps.MapTypeId.ROADMAP
 });
+filterInit();
 plotSeverity();
 
 </script>

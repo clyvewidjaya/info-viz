@@ -24,7 +24,7 @@ function plotSeverity(){
   //console.log(d3.max(Object.values(severity)));
   //console.log(d3.min(Object.values(severity)));
   var myColor = d3.scaleSequential().domain([d3.min(Object.values(severity)),d3.max(Object.values(severity))])
-    .interpolator(d3.interpolateYlOrRd);
+    .interpolator(d3.interpolatePuRd);
   console.log(myColor(2))
   console.log(myColor(10))
   data=severity
