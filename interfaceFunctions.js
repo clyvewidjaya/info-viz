@@ -1,6 +1,17 @@
+var currentSelectedIntersection;
+var currentLowYear;
+var currentHighYear;
+var currentLowSeverity;
+var currentHighSeverity;
+var currentSelectedMonths;
+
 function filterInit(){
     //all selected intersection for init
     currentSelectedIntersection = ["MJRSL", "MNRSL", "MJRML", "MNRML"];
+    currentLowYear=2008;
+    currentHighYear=2018;
+    currentLowSeverity=0;
+    currentHighSeverity=100;
 
     $("#rate-slider-range").slider({
         range: true,
@@ -93,7 +104,16 @@ function checkboxChange(){
 }
 
 function updateData(){
-    console.log("update data here");
+    console.log("update data");
+    //console.log(currentHighYear)
+    //console.log(currentLowYear)
+    //console.log(currentLowSeverity)
+    //console.log(currentHighSeverity)
+    //console.log(currentSelectedMonths)
+    //console.log(currentSelectedIntersection)
+
+    clearOverview();
+    plotSeverity();
 
     //all the needed filter variables will have the prefix of
     //current..... (see top)
