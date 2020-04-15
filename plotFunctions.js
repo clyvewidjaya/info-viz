@@ -1,10 +1,26 @@
 var overlay;
+var here;
+function drawSelected(){
+  d3.selectAll("marker").remove()
+  if(view==="Accident view"){
+    plotAccidents();
+  }
+  else if(view==="Intersection summary"){
+    plotIntersections();
+  }
+  else if(view==="Severity summary"){
+    plotSeverity();
+  }
+}
 function clearOverview(){
-  console.log('tag',document.getElementsByTagName('svg'))
-  if(document.getElementsByTagName('svg').length!=0){
+  //console.log('tag',document.getElementsByTagName('svg'))
+  d3.selectAll("svg > *").remove();
+/*  if(document.getElementsByTagName('svg').length!=0){
     var tag=document.getElementsByTagName('svg')[0].parentElement;
     tag.parentNode.removeChild(tag);
-  }
+  }*/
+  overlay=null;
+  data=null
   //console.log(document.getElementsByTagName('svg')[0].parentElement.parentElement);
 }
 function createSeverity(data){
@@ -44,112 +60,163 @@ function createSeverity(data){
 
 function plotSeverity(){
   var severity=createSeverity(ksi);
-  console.log(severity);
+  console.log("severity");
   //console.log(d3.max(Object.values(severity)));
   //console.log(d3.min(Object.values(severity)));
   var myColor = d3.scaleSequential().domain([d3.min(Object.values(severity)),d3.max(Object.values(severity))])
     .interpolator(d3.interpolatePuRd);
-  console.log(myColor(2))
-  console.log(myColor(10))
-  data=severity
+  //console.log(typeof(severity))
+  var keysSorted = Object.keys(severity).sort(function(a,b){return severity[a]-severity[b]})
+  //console.log(keysSorted)
+
+  //console.log(severity.sort(d3.ascending))
+  data=keysSorted
 
   overlay = new google.maps.OverlayView();
-  overlay.onRemove = function(){}
+  overlay.onRemove = function(){
+      d3.selectAll("severityMark").remove();
+  }
   overlay.onAdd = function() {
-  var layer = d3.select(this.getPanes().overlayLayer).append("div")
-    .attr("class", "severityMark");
-  overlay.draw = function() {
-    var projection = this.getProjection(),
-      padding = 10;
-
-    var marker = layer.selectAll("svg")
-      .data(d3.entries(data))
-      .each(transform)
-      .enter().append("svg")
-      .each(transform)
-      .attr("class", "marker");
-    marker.append("circle")
-      .attr("r", padding/2.0)
-      .attr("cx", padding)
-      .attr("cy", padding)
-      .attr("fill", (s)=>myColor(s.value));
-    function transform(d) {
-      var pos = d.key.split(',').map(parseFloat);
-      d = new google.maps.LatLng(pos[1], pos[0]);
-      d = projection.fromLatLngToDivPixel(d);
-      return d3.select(this)
-        .style("left", (d.x - padding) + "px")
-        .style("top", (d.y - padding) + "px");
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+      .attr("class", "severityMark");
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+        padding = 10;
+      //console.log(data[0])
+      //console.log(Object.keys(severity))
+      function transformA(d) {
+        if(view==="Severity summary"){
+          //console.log("A")
+          var pos = d.value.split(',').map(parseFloat);
+          d = new google.maps.LatLng(pos[1], pos[0]);
+          d = projection.fromLatLngToDivPixel(d);
+          return d3.select(this)
+            .style("left", (d.x - padding) + "px")
+            .style("top", (d.y - padding) + "px");
+        }
+        return d3.select(this).style("left", (1000000 - padding) + "px").style("top", (1000000 - padding) + "px");
       }
+      var marker = layer.selectAll("svg")
+        .data(d3.entries(data))
+        .each(transformA)
+        .enter().append("svg")
+        .each(transformA)
+        .attr("class", "marker");
+      marker.append("circle")
+        .attr("r", padding/2.0)
+        .attr("cx", padding)
+        .attr("cy", padding)
+        .attr("fill", (s)=>myColor(severity[s.value]));
     };
   };
   overlay.setMap(map);
 }
 function plotIntersections(){
-  intersection=intersection.slice(0,500);
-  console.log(intersection)
-  data=intersection
+  console.log("intersection")
+  data=intersection.slice(0,500);
   overlay = new google.maps.OverlayView();
+  overlay.onRemove = function(){
+      d3.selectAll("junctions").remove();
+  }
   overlay.onAdd = function() {
-  var layer = d3.select(this.getPanes().overlayLayer).append("div")
-    .attr("class", "junctions");
-  overlay.draw = function() {
-    var projection = this.getProjection(),
-      padding = 2;
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+      .attr("class", "junctions");
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+        padding = 2;
 
-    var marker = layer.selectAll("svg")
-      .data(d3.entries(data))
-      .each(transform)
-      .enter().append("svg")
-      .each(transform)
-      .attr("class", "marker");
-    marker.append("circle")
-      .attr("r", padding/2.0)
-      .attr("cx", padding)
-      .attr("cy", padding);
-    function transform(d) {
-      var pos = d.value.MODGEOMETRY.slice(2,d.value.MODGEOMETRY.length-1).split(', ').map(parseFloat);
-      d = new google.maps.LatLng(pos[1], pos[0]);
-      d = projection.fromLatLngToDivPixel(d);
-      return d3.select(this)
-        .style("left", (d.x - padding) + "px")
-        .style("top", (d.y - padding) + "px");
+      function transformB(d) {
+        if(view==="Intersection summary"){
+          //console.log("B");
+          var pos = d.value.MODGEOMETRY.slice(2,d.value.MODGEOMETRY.length-1).split(', ').map(parseFloat);
+          d = new google.maps.LatLng(pos[1], pos[0]);
+          d = projection.fromLatLngToDivPixel(d);
+          return d3.select(this)
+            .style("left", (d.x - padding) + "px")
+            .style("top", (d.y - padding) + "px");
+        }
+        return d3.select(this).style("left", (1000000 - padding) + "px").style("top", (1000000 - padding) + "px");;
       }
+      var marker = layer.selectAll("svg")
+        .data(d3.entries(data))
+        .each(transformB)
+        .enter().append("svg")
+        .each(transformB)
+        .attr("class", "marker");
+      marker.append("circle")
+        .attr("r", padding/2.0)
+        .attr("cx", padding)
+        .attr("cy", padding);
     };
   };
   overlay.setMap(map);
 }
 function plotAccidents(){
-  console.log(ksi)
+  var quadtree = d3.quadtree();
+  console.log("ksi")
   data=ksi
   overlay = new google.maps.OverlayView();
+  overlay.onRemove= function(){
+    d3.selectAll("accident").remove();
+  }
   overlay.onAdd = function() {
-  var layer = d3.select(this.getPanes().overlayLayer).append("div")
-    .attr("class", "accident");
-  overlay.draw = function() {
-    var projection = this.getProjection(),
-      padding = 6;
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+      .attr("class", "accident");
 
-    var marker = layer.selectAll("svg")
-      .data(d3.entries(data))
-      .each(transform)
-      .enter().append("svg")
-      .each(transform)
-      .attr("class", "marker");
-    marker.append("circle")
-      .attr("r", padding/2.0)
-      .attr("cx", padding)
-      .attr("cy", padding);
-    function transform(d) {
-      //console.log(d.value);
-      var pos = [d.value.LATITUDE,d.value.LONGITUDE];
-      d = new google.maps.LatLng(pos[0], pos[1]);
-      d = projection.fromLatLngToDivPixel(d);
-      return d3.select(this)
-        .style("left", (d.x - padding) + "px")
-        .style("top", (d.y - padding) + "px");
-      }
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+        padding = 6;
+        function transformC(d) {
+          if(view==="Accident view"){
+            //console.log("C");
+            if(noOverLap==0){
+              var pos = [d.value.LATITUDE,d.value.LONGITUDE];
+            }
+            else{
+              var pos= empty(d.value.LATITUDE,d.value.LONGITUDE,quadtree);
+              quadtree.add([d.value.LATITUDE,d.value.LONGITUDE])
+            }
+            d = new google.maps.LatLng(pos[0], pos[1]);
+            d = projection.fromLatLngToDivPixel(d);
+            return d3.select(this)
+              .style("left", (d.x - padding) + "px")
+              .style("top", (d.y - padding) + "px");
+          }
+          return d3.select(this).style("left", (1000000 - padding) + "px").style("top", (1000000 - padding) + "px");;
+        }
+
+      var marker = layer.selectAll("svg")
+        .data(d3.entries(data))
+        .each(transformC)
+        .enter().append("svg")
+        .each(transformC)
+        .attr("class", "marker");
+      marker.append("circle")
+        .attr("r", padding/2.0)
+        .attr("cx", padding)
+        .attr("cy", padding);
+      //console.log(Math.random())
+
     };
   };
   overlay.setMap(map);
+}
+function empty(x,y,quadtree){
+  //console.log("x,y:",x,y)
+  if(quadtree.find(x,y,0.00001)!=-1){
+    //console.log(x,y)
+    //console.log(x+(Math.random()-0.5)/1000,y+(Math.random()-0.5)/1000)
+    return [x+(Math.cos(x)+0.4)/100,y+(Math.sin(y)+0.4)/100];
+  }
+  /*var i=0,a=x,b=y;
+  while(quadtree.find(x,y,0.00001)!=-1){
+    //console.log("a,b:",a,b)
+    a=x+Math.cos(i)/1000.0
+    b=y+Math.sin(i)/1000.0
+    i+=0.1
+    if(i>50){
+      break;
+    }
+  }*/
+  return [x,y];
 }
