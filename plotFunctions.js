@@ -63,22 +63,16 @@ function plotSeverity(){
   var severity=parts["counts"]
   var details=parts["details"]
   console.log("severity");
-  //console.log(d3.max(Object.values(severity)));
-  //console.log(d3.min(Object.values(severity)));
   var myColor = d3.scaleLinear()
     .domain([0,d3.max(Object.values(severity))])
     .range([d3.rgb("#DDE800"),d3.rgb("#E80000")]);
 
 
-  //console.log(typeof(severity))
   var keysSorted = Object.keys(severity).sort(function(a,b){return severity[a]-severity[b]})
-  //console.log(keysSorted)
 
-  //console.log(severity.sort(d3.ascending))
   data=keysSorted
 
   overlay = new google.maps.OverlayView();
-  //overlay = new google.maps.OverlayView();
   overlay.onRemove = function(){
       d3.selectAll("severityMark").remove();
   }
@@ -104,12 +98,8 @@ function plotSeverity(){
 
       var projection = this.getProjection(),
         padding = 10;
-      //console.log(data[0])
-      //console.log(Object.keys(severity))
       function transformA(d) {
         if(view==="Severity summary"){
-          //console.log("A")
-          //console.log(d.value);
           var pos = d.value.split(',').map(parseFloat);
           d = new google.maps.LatLng(pos[1], pos[0]);
           d = projection.fromLatLngToDivPixel(d);
@@ -131,7 +121,6 @@ function plotSeverity(){
         .attr("cy", padding)
         .attr("fill", (s)=>myColor(severity[s.value]))
         .on("mouseover",function(d){
-          console.log(details[d.value])
           pop.html(details[d.value])
           pop.transition().style("opacity",1)
             .style("left", (d3.event.pageX-window.innerWidth*0.325) + "px")
@@ -172,7 +161,6 @@ function plotIntersections(){
 
       function transformB(d) {
         if(view==="Intersection summary"){
-          //console.log("B");
           var pos = d.value.MODGEOMETRY.slice(2,d.value.MODGEOMETRY.length-1).split(', ').map(parseFloat);
           d = new google.maps.LatLng(pos[1], pos[0]);
           d = projection.fromLatLngToDivPixel(d);
@@ -201,7 +189,7 @@ function plotAccidents(){
   var quadtree = d3.quadtree();
   console.log("ksi")
 
-  data=[]//ksi
+  data=[]
 
   ksi.forEach((item, i) => {
     var month=parseInt(item.DATE.split('-')[1])
@@ -223,7 +211,6 @@ function plotAccidents(){
         padding = 6;
         function transformC(d) {
           if(view==="Accident view"){
-            //console.log("C");
             if(noOverLap==0){
               var pos = [d.value.LATITUDE,d.value.LONGITUDE];
             }
@@ -250,8 +237,6 @@ function plotAccidents(){
         .attr("r", padding/2.0)
         .attr("cx", padding)
         .attr("cy", padding);
-      //console.log(Math.random())
-
     };
   };
   overlay.setMap(map);

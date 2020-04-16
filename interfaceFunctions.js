@@ -6,7 +6,6 @@ var currentHighSeverity;
 var currentSelectedMonths;
 var currentSelectedType;
 var view;
-var noOverLap;
 
 function filterInit(){
     //all selected intersection for init
@@ -16,7 +15,7 @@ function filterInit(){
     currentHighYear=2018;
     currentLowSeverity=0;
     currentHighSeverity=100;
-    view="Accident view"
+    view="Severity summary"
     noOverLap=1;
 
     console.log("init")
@@ -122,23 +121,11 @@ $("button").click(function() {
     view = $(this)[0].innerHTML;
     updateData()
 });
-//function button(){
-//  console.log($this.val())
-//}
 
 function updateData(){
     console.log("update data");
-    //console.log(currentHighYear)
-    //console.log(currentLowYear)
-    //console.log(currentLowSeverity)
-    //console.log(currentHighSeverity)
-    //console.log(currentSelectedMonths)
-    //console.log(currentSelectedIntersection)
-    //console.log("noOverLap",noOverLap);
 
     clearOverview();
     drawSelected();
 
-    //all the needed filter variables will have the prefix of
-    //current..... (see top)
 }

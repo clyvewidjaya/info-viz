@@ -151,7 +151,6 @@ h1{
 
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<!--script src="//d3js.org/d3.v3.min.js"></script-->
 
 <script type="text/javascript" src="plotFunctions.js"></script>
 <script type="text/javascript" src="interfaceFunctions.js"></script>
@@ -163,7 +162,6 @@ h1{
 
 <script>
 
-// Create the Google Map…
 var map = new google.maps.Map(d3.select("#map").node(), {
   zoom: 11,
   center:new google.maps.LatLng(43.68,-79.3832),
@@ -172,6 +170,6 @@ var map = new google.maps.Map(d3.select("#map").node(), {
   fullscreenControl: false
 });
 filterInit();
-plotAccidents();
+drawSelected();
 
 </script>
