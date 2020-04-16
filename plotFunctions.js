@@ -19,18 +19,17 @@ function clearOverview(){
   data=null
 }
 function createSeverity(data){
-  //intersection=intersection.slice(0,500);
-  var counts={},details={};
+  var counts={},details={},cat={};
   var positions2=intersection.map((s)=>{return s.MODGEOMETRY.slice(2,s.MODGEOMETRY.length-1).split(', ').map(parseFloat);});
+  var cat2=intersection.map((s)=>{return s.CLASSIFICATION;});
   positions=[];
   positions2.forEach((item, i) => {
+    positions.push(item)
 
-    if(currentSelectedIntersection.indexOf(intersection[i].CLASSIFICATION)!=-1){
-      //console.log(currentSelectedIntersection,intersection[i].CLASSIFICATION,currentSelectedIntersection.indexOf(intersection[i].CLASSIFICATION))
-      positions.push(item)
-    }
-    //console.log(intersection[i],item)
   });
+cat2.forEach((item, i) => {
+  cat[positions[i][0]+','+positions[i][1]]=item;
+});
 
   var quadtree = d3.quadtree().addAll(positions);
   positions.forEach((pos, i) => {
@@ -39,13 +38,13 @@ function createSeverity(data){
   });
   data.forEach((item, i) => {
     var year=parseInt(item.DATE.split('-')[1])
-    //console.log(item.YEAR>=currentLowYear, item.YEAR<=currentHighYear)
-    //console.log(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear)
     if(item.YEAR>=currentLowYear && item.YEAR<=currentHighYear && currentSelectedMonths.indexOf(year)!=-1 && currentSelectedType.indexOf(item.ACCLASS)!=-1){
       var found=quadtree.find(item.LONGITUDE,item.LATITUDE);
-      //console.log(found)
-      counts[found[0]+','+found[1]]=counts[found[0]+','+found[1]]+1;
-      details[found[0]+','+found[1]]=details[found[0]+','+found[1]]+" "+item.DATE+" <br> "+item.ACCLASS+" <br> "+item.INVOLVED+" <hr>"
+      //console.log(item)
+      if(currentSelectedIntersection.indexOf(cat[found[0]+','+found[1]])!=-1){
+        counts[found[0]+','+found[1]]=counts[found[0]+','+found[1]]+1;
+        details[found[0]+','+found[1]]=details[found[0]+','+found[1]]+" "+item.DATE+" <br> "+item.ACCLASS+" <br> "+item.INVOLVED+" <hr>"
+      }
     }
   });
   for (const [ key, value ] of Object.entries(counts)) {
@@ -132,11 +131,7 @@ function plotSeverity(){
         .attr("cy", padding)
         .attr("fill", (s)=>myColor(severity[s.value]))
         .on("mouseover",function(d){
-          //console.log(d)
-          //console.log(d.value)
-          //console.log(details[d.value])
-          //console.log(event.pageX)
-          //console.log(event.pageY)
+          console.log(details[d.value])
           pop.html(details[d.value])
           pop.transition().style("opacity",1)
             .style("left", (d3.event.pageX-window.innerWidth*0.325) + "px")
@@ -145,7 +140,12 @@ function plotSeverity(){
         .on("mouseout",function(d){
           console.log("out")
           pop.transition().style("opacity",0)
+        })
+        .on("click",function(d){
+          console.log("click")
+          pop.transition().style("opacity",0)
         });
+        $('.pop').remove();
         pop = layer.append("div")
           .attr("class", "pop")
           .style("opacity", 0);
